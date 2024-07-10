@@ -11,6 +11,7 @@ import com.nttdata.util.MapperUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ public class MovementController {
     private final MapperUtil mapperUtil;
 
     @GetMapping
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> findAll(){
         List<MovementDTO> list = mapperUtil.mapList(service.findAll(), MovementDTO.class);
 
@@ -33,7 +35,7 @@ public class MovementController {
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> getAccountById(@PathVariable("id") Long id) {
         MovementEntity entity = service.findById(id, "Movements");
 
@@ -43,7 +45,7 @@ public class MovementController {
     }
 
     @GetMapping("/reportes")
-//    @PreAuthorize("hasRole('admin_client_role')")
+    @PreAuthorize("hasRole('admin_client_role')")
     public ResponseEntity<BaseResponse> reportMovementByDateAndClientId(@RequestParam(value = "clientId") String clientId,
                                                                           @RequestParam(value = "startDate") String startDate,
                                                                           @RequestParam(value = "endDate") String endDate) throws Exception {
@@ -52,14 +54,14 @@ public class MovementController {
     }
 
     @PostMapping
-//    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> addMovement(@Valid @RequestBody MovementDTO request) throws Exception {
         service.saveMovement(request);
         return ResponseEntity.ok(BaseResponse.builder().data(request).build());
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('admin_client_role')")
+    @PreAuthorize("hasRole('admin_client_role')")
     public ResponseEntity<BaseResponse> deleteAccount(@PathVariable("id") Long id) {
         // Eliminar registro
         //service.delete(id);

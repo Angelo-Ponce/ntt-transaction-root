@@ -8,6 +8,7 @@ import com.nttdata.util.MapperUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class AccountController {
     private final MapperUtil mapperUtil;
 
     @GetMapping
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> findAll(){
         List<AccountDTO> list = mapperUtil.mapList(service.findAll(), AccountDTO.class);
 
@@ -29,7 +31,7 @@ public class AccountController {
     }
 
     @GetMapping("/{id}")
-//    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> getAccountById(@PathVariable("id") Long id) {
         AccountEntity entity = service.findById(id, "Account");
 
@@ -39,7 +41,7 @@ public class AccountController {
     }
 
     @PostMapping
-//    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> addAccount(@Valid @RequestBody AccountDTO request) {
         AccountEntity account = service.save(mapperUtil.map(request, AccountEntity.class));
 
@@ -47,7 +49,7 @@ public class AccountController {
     }
 
     @PutMapping("/{id}")
-//    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
+    @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
     public ResponseEntity<BaseResponse> updateAccount(@PathVariable("id") Long id,
                                                       @RequestBody AccountDTO dto) {
         dto.setAccountId(id);
@@ -56,7 +58,7 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-//    @PreAuthorize("hasRole('admin_client_role')")
+    @PreAuthorize("hasRole('admin_client_role')")
     public ResponseEntity<BaseResponse> deleteAccount(@PathVariable("id") Long id) {
         // Eliminar registro
         //service.delete(id);
