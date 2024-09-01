@@ -1,10 +1,8 @@
 package com.nttdata.controller;
 
-import com.nttdata.dto.AccountDTO;
 import com.nttdata.dto.MovementDTO;
 import com.nttdata.dto.MovementReportDTO;
 import com.nttdata.dto.response.BaseResponse;
-import com.nttdata.model.AccountEntity;
 import com.nttdata.model.MovementEntity;
 import com.nttdata.service.IMovementService;
 import com.nttdata.util.MapperUtil;
@@ -36,7 +34,7 @@ public class MovementController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('admin_client_role') or hasRole('user_client_role')")
-    public ResponseEntity<BaseResponse> getAccountById(@PathVariable("id") Long id) {
+    public ResponseEntity<BaseResponse> getMovementById(@PathVariable("id") Long id) {
         MovementEntity entity = service.findById(id, "Movements");
 
         return ResponseEntity.ok(BaseResponse.builder()

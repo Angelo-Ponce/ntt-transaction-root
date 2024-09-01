@@ -53,12 +53,14 @@ public class MovementServiceImpl extends CRUDImpl<MovementEntity, Long> implemen
     public void saveMovement(MovementDTO request) {
         // Obtener cuenta
         AccountEntity accountEntity = this.accountService.findById(request.getAccountId(), "Account");
-
+        BigDecimal balance = accountEntity.getInitialBalance().add(request.getMovementValue());
         if (request.getMovementValue().compareTo(BigDecimal.ZERO) > 0){
             request.setMovementType("DEPOSITO");
         } else if(request.getMovementValue().compareTo(BigDecimal.ZERO) < 0){
             if( accountEntity.getInitialBalance().compareTo(BigDecimal.ZERO) == 0 ||
-                    accountEntity.getInitialBalance().compareTo(request.getMovementValue()) < 0){
+                    accountEntity.getInitialBalance().compareTo(request.getMovementValue()) < 0
+            || balance.compareTo(BigDecimal.ZERO) < 0 )
+            {
                 throw new ModelNotFoundException("Saldo no disponible");
             }
             request.setMovementType("RETIRO");
@@ -80,19 +82,31 @@ public class MovementServiceImpl extends CRUDImpl<MovementEntity, Long> implemen
         List<MovementEntity> movementVo = this.repository.reportMovement(clientId, getDateTransform(startDate), getDateTransform(endDate));
         List<MovementReportDTO> reportVos = new ArrayList<>();
         if (!movementVo.isEmpty()) {
-            movementVo.forEach( data -> {
-                MovementReportDTO movement = MovementReportDTO.builder()
-                        .movementDate(data.getMovementDate())
-                        .name(data.getAccount().getClient().getName())
-                        .accountNumber(data.getAccount().getAccountNumber())
-                        .accountType(data.getAccount().getAccountType())
-                        .initialBalance(data.getAccount().getInitialBalance())
-                        .movementStatus(data.getStatus())
-                        .movementValue(data.getMovementValue())
-                        .balance(data.getBalance())
-                        .build();
-                reportVos.add(movement);
-            });
+            reportVos.addAll(movementVo.stream().map( data -> MovementReportDTO.builder()
+            .movementDate(data.getMovementDate())
+            .name(data.getAccount().getClient().getName())
+            .accountNumber(data.getAccount().getAccountNumber())
+            .accountType(data.getAccount().getAccountType())
+            .initialBalance(data.getAccount().getInitialBalance())
+            .movementStatus(data.getStatus())
+            .movementValue(data.getMovementValue())
+            .balance(data.getBalance())
+            .build()
+            ).toList()) ;
+
+//            movementVo.forEach( data -> {
+//                MovementReportDTO movement = MovementReportDTO.builder()
+//                        .movementDate(data.getMovementDate())
+//                        .name(data.getAccount().getClient().getName())
+//                        .accountNumber(data.getAccount().getAccountNumber())
+//                        .accountType(data.getAccount().getAccountType())
+//                        .initialBalance(data.getAccount().getInitialBalance())
+//                        .movementStatus(data.getStatus())
+//                        .movementValue(data.getMovementValue())
+//                        .balance(data.getBalance())
+//                        .build();
+//                reportVos.add(movement);
+//            });
         }
         return reportVos;
     }
