@@ -54,22 +54,11 @@ public class MovementServiceImpl extends CRUDImpl<MovementEntity, Long> implemen
         // Obtener cuenta
         AccountEntity accountEntity = this.accountService.findById(request.getAccountId(), "Account");
         BigDecimal balance = accountEntity.getInitialBalance().add(request.getMovementValue());
-        if (request.getMovementValue().compareTo(BigDecimal.ZERO) > 0){
-            request.setMovementType("DEPOSITO");
-        } else if(request.getMovementValue().compareTo(BigDecimal.ZERO) < 0){
-            if( accountEntity.getInitialBalance().compareTo(BigDecimal.ZERO) == 0 ||
-                    accountEntity.getInitialBalance().compareTo(request.getMovementValue()) < 0
-            || balance.compareTo(BigDecimal.ZERO) < 0 )
-            {
-                throw new ModelNotFoundException("Saldo no disponible");
-            }
-            request.setMovementType("RETIRO");
-        } else {
-            throw new ModelNotFoundException("Movimiento no valido");
-        }
+
+        validMovement(request, balance);
 
         // Actualizar el saldo inicial
-        accountEntity.setInitialBalance(accountEntity.getInitialBalance().add(request.getMovementValue()));
+        accountEntity.setInitialBalance(balance);
         request.setMovementDate(new Date());
         request.setBalance(accountEntity.getInitialBalance());
         request.setStatus(Boolean.TRUE);
@@ -111,6 +100,19 @@ public class MovementServiceImpl extends CRUDImpl<MovementEntity, Long> implemen
         return reportVos;
     }
 
+    private void validMovement(MovementDTO request, BigDecimal balance){
+        if (request.getMovementValue().compareTo(BigDecimal.ZERO) > 0){
+            request.setMovementType("DEPOSITO");
+        } else if(request.getMovementValue().compareTo(BigDecimal.ZERO) < 0){
+            if(balance.compareTo(BigDecimal.ZERO) < 0 )
+            {
+                throw new ModelNotFoundException("Saldo no disponible");
+            }
+            request.setMovementType("RETIRO");
+        } else {
+            throw new ModelNotFoundException("Movimiento no valido");
+        }
+    }
 
     private void save(MovementDTO movementDTO) {
         MovementEntity movementEntity = mapperUtil.map(movementDTO, MovementEntity.class);
